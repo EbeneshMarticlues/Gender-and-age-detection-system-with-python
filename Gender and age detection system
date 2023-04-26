@@ -1,0 +1,26 @@
+import cv2
+import numpy as np
+
+# Load the pre-trained models
+gender_model = cv2.dnn.readNetFromCaffe('deploy_gender.prototxt', 'gender_net.caffemodel')
+age_model = cv2.dnn.readNetFromCaffe('deploy_age.prototxt', 'age_net.caffemodel')
+
+# Load the image
+img = cv2.imread('test_image.jpg')
+
+# Preprocess the image
+blob = cv2.dnn.blobFromImage(cv2.resize(img, (227, 227)), 1.0, (227, 227), (78.4263377603, 87.7689143744, 114.895847746), swapRB=False)
+
+# Pass the image through the gender model
+gender_model.setInput(blob)
+gender_preds = gender_model.forward()
+gender = np.argmax(gender_preds)
+
+# Pass the image through the age model
+age_model.setInput(blob)
+age_preds = age_model.forward()
+age = int(age_preds[0].dot(np.arange(0, 101).reshape(101, 1)))
+
+# Print the results
+print('Gender: ' + ('Male' if gender == 1 else 'Female'))
+print('Age: ' + str(age))
